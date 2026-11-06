@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Post Manager Hub - Direct File Edition</title>
+  <title>Post Manager Hub - Telegram Photo Support</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -276,6 +276,7 @@
         err.classList.add('hidden');
         document.getElementById('loginForm').reset();
       } else {
+        err.classList.add('hidden'); // Simplified
         err.classList.remove('hidden');
       }
     });
@@ -427,17 +428,25 @@
       document.getElementById('cancelEditBtn').style.display = "none";
     }
 
-    // Helper function to convert local image file to Base64 string
-    function convertFileToBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
+    // Reliable Free Image Upload (Catbox.moe API - 100% Free, No 400 Errors, Generates Public Image URL for Telegram)
+    async function uploadImageToCatbox(file) {
+      const formData = new FormData();
+      formData.append("reqtype", "fileupload");
+      formData.append("fileToUpload", file);
+
+      const response = await fetch("https://catbox.moe/user/api.php", {
+        method: "POST",
+        body: formData
       });
+      const url = await response.text();
+      if (url.startsWith("http")) {
+        return url.trim();
+      } else {
+        throw new Error("Image upload failed");
+      }
     }
 
-    async function sendTelegramNotification(title, videoLink) {
+    async function sendTelegramNotification(title, videoLink, imageUrl) {
       const captionText = 
         `🔥 <b>NEW UPDATE PUBLISHED!</b> 🔥\n` +
         `━━━━━━━━━━━━━━━━━━━\n` +
@@ -446,14 +455,15 @@
         `━━━━━━━━━━━━━━━━━━━\n` +
         `✨ <i>Stay tuned for more updates!</i>`;
 
-      const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+      const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
       try {
         await fetch(telegramUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chat_id: TELEGRAM_CHAT_ID,
-            text: captionText,
+            photo: imageUrl,
+            caption: captionText,
             parse_mode: 'HTML'
           })
         });
@@ -479,8 +489,8 @@
         let count = 0;
         for (const docSnap of querySnapshot.docs) {
             const post = docSnap.data();
-            if (post.title && post.videoLink) {
-                await sendTelegramNotification(post.title, post.videoLink);
+            if (post.title && post.videoLink && post.imageUrl) {
+                await sendTelegramNotification(post.title, post.videoLink, post.imageUrl);
                 count++;
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
@@ -503,13 +513,13 @@
       const existingImageUrl = document.getElementById('existingImageUrl').value;
 
       submitBtn.disabled = true;
-      submitBtn.innerText = "පින්තූරය සකස් කරමින් පවතී...";
+      submitBtn.innerText = "පින්තූරය උඩුගත කරමින් පවතී...";
 
       try {
         let imageUrl = existingImageUrl;
 
         if (imageFile) {
-          imageUrl = await convertFileToBase64(imageFile);
+          imageUrl = await uploadImageToCatbox(imageFile);
         }
 
         if (!imageUrl) {
@@ -533,12 +543,12 @@
             views: 0,
             createdAt: serverTimestamp()
           });
-          await sendTelegramNotification(title, videoLink);
+          await sendTelegramNotification(title, videoLink, imageUrl);
           postForm.reset();
         }
       } catch (error) {
         console.error("Error saving document: ", error);
-        alert("දෝෂයක් ඇති විය!");
+        alert("පින්තූරය උඩුගත කිරීමේදී දෝෂයක් ඇති විය!");
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Post එක Save කරන්න`;
