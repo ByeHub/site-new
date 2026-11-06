@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Post Manager Hub - Direct Upload & Telegram</title>
+  <title>Post Manager Hub - Direct File Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -427,25 +427,17 @@
       document.getElementById('cancelEditBtn').style.display = "none";
     }
 
-    // Function to upload image to ImgBB via API (Generates a valid Public HTTP URL for Telegram)
-    async function uploadImageToImgBB(file) {
-      const formData = new FormData();
-      formData.append("image", file);
-      
-      // Using a free public ImgBB API upload
-      const response = await fetch("https://api.imgbb.com/1/upload?key=6d207e02194a847aa95d0a32e01bcf5f", {
-        method: "POST",
-        body: formData
+    // Helper function to convert local image file to Base64 string
+    function convertFileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
       });
-      const data = await response.json();
-      if (data.success) {
-        return data.data.url;
-      } else {
-        throw new Error("Image upload failed");
-      }
     }
 
-    async function sendTelegramNotification(title, videoLink, imageUrl) {
+    async function sendTelegramNotification(title, videoLink) {
       const captionText = 
         `🔥 <b>NEW UPDATE PUBLISHED!</b> 🔥\n` +
         `━━━━━━━━━━━━━━━━━━━\n` +
@@ -454,15 +446,14 @@
         `━━━━━━━━━━━━━━━━━━━\n` +
         `✨ <i>Stay tuned for more updates!</i>`;
 
-      const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
+      const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
       try {
         await fetch(telegramUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chat_id: TELEGRAM_CHAT_ID,
-            photo: imageUrl,
-            caption: captionText,
+            text: captionText,
             parse_mode: 'HTML'
           })
         });
@@ -488,8 +479,8 @@
         let count = 0;
         for (const docSnap of querySnapshot.docs) {
             const post = docSnap.data();
-            if (post.title && post.videoLink && post.imageUrl) {
-                await sendTelegramNotification(post.title, post.videoLink, post.imageUrl);
+            if (post.title && post.videoLink) {
+                await sendTelegramNotification(post.title, post.videoLink);
                 count++;
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
@@ -512,13 +503,13 @@
       const existingImageUrl = document.getElementById('existingImageUrl').value;
 
       submitBtn.disabled = true;
-      submitBtn.innerText = "පින්තූරය උඩුගත කරමින් පවතී...";
+      submitBtn.innerText = "පින්තූරය සකස් කරමින් පවතී...";
 
       try {
         let imageUrl = existingImageUrl;
 
         if (imageFile) {
-          imageUrl = await uploadImageToImgBB(imageFile);
+          imageUrl = await convertFileToBase64(imageFile);
         }
 
         if (!imageUrl) {
@@ -542,12 +533,12 @@
             views: 0,
             createdAt: serverTimestamp()
           });
-          await sendTelegramNotification(title, videoLink, imageUrl);
+          await sendTelegramNotification(title, videoLink);
           postForm.reset();
         }
       } catch (error) {
         console.error("Error saving document: ", error);
-        alert("පින්තූරය උඩුගත කිරීමේදී දෝෂයක් ඇති විය!");
+        alert("දෝෂයක් ඇති විය!");
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Post එක Save කරන්න`;
