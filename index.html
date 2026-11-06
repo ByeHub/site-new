@@ -14,13 +14,13 @@
       min-height: 100vh;
     }
     .glass {
-      background: rgba(15, 23, 42, 0.7);
+      background: rgba(15, 23, 42, 0.75);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .glass-card {
-      background: rgba(30, 41, 59, 0.6);
+      background: rgba(30, 41, 59, 0.65);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.05);
     }
@@ -43,20 +43,42 @@
 </head>
 <body class="min-h-screen flex flex-col items-center p-4 sm:p-8">
 
-  <!-- Header -->
+  <!-- Welcome Overlay Modal (સයිට් එකට පළමු වරට එන විට පෙන්වන Welcome Pop-up එක) -->
+  <div id="welcomeModal" class="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade">
+    <div class="glass p-8 sm:p-10 rounded-3xl shadow-2xl max-w-md w-full text-center border border-slate-700/80 relative overflow-hidden">
+      <div class="w-20 h-20 bg-gradient-to-tr from-red-600 to-rose-500 rounded-full flex items-center justify-center text-3xl text-white mx-auto mb-6 shadow-lg shadow-red-600/40 floating">
+        <i class="fa-solid fa-play"></i>
+      </div>
+      <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-rose-400 to-pink-500 mb-3">
+        Welcome to Site!
+      </h2>
+      <p class="text-slate-300 text-sm mb-8 leading-relaxed">
+        Post Manager Hub වෙත ඔබව සාදරයෙන් පිළිගනිමු. මෙහිදී ඔබට සියලුම නව වීඩියෝ සහ යාවත්කාලීන කිරීම් ඉතා පහසුවෙන් සොයාගත හැක!
+      </p>
+      <button onclick="closeWelcomeModal()" 
+        class="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold py-3.5 px-6 rounded-2xl transition duration-300 transform hover:scale-105 shadow-lg shadow-red-600/30 flex items-center justify-center gap-2">
+        <span>Continue</span> <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Header (Home Button & Admin Login) -->
   <header class="w-full max-w-4xl mb-6 flex justify-between items-center border-b border-slate-800/80 pb-4 animate-fade">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-rose-400 to-pink-500 flex items-center gap-2.5">
-      <i class="fa-solid fa-photo-film text-red-500"></i> Post Manager Hub
-    </h1>
-    <div id="authSection">
+    <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-rose-400 to-pink-500 flex items-center gap-2.5">
+      <i class="fa-solid fa-house text-red-500 hover:scale-110 transition"></i> Post Manager Hub
+    </a>
+    <div id="authSection" class="flex items-center gap-3">
+      <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-3.5 py-2 rounded-xl transition text-sm border border-slate-700 flex items-center gap-1.5">
+        <i class="fa-solid fa-house text-red-400"></i> Home
+      </button>
       <button onclick="openLoginModal()" class="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-semibold px-4 py-2 rounded-xl transition duration-300 shadow-lg shadow-red-600/30 flex items-center gap-2 text-sm transform hover:scale-105">
         <i class="fa-solid fa-lock"></i> Admin Login
       </button>
     </div>
   </header>
 
-  <!-- Top Stats Banner (Animated Counter Display) -->
-  <section class="w-full max-w-4xl grid grid-cols-2 gap-4 mb-8 animate-fade">
+  <!-- Top Stats Banner -->
+  <section class="w-full max-w-4xl grid grid-cols-2 gap-4 mb-6 animate-fade">
     <div class="glass p-5 rounded-2xl shadow-xl flex items-center gap-4 border-l-4 border-red-500 floating">
       <div class="w-12 h-12 bg-red-500/10 text-red-500 rounded-xl flex items-center justify-center text-xl shadow-inner">
         <i class="fa-solid fa-layer-group"></i>
@@ -77,20 +99,34 @@
     </div>
   </section>
 
+  <!-- Search Bar -->
+  <section class="w-full max-w-4xl mb-6 animate-fade">
+    <div class="relative">
+      <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
+        <i class="fa-solid fa-search"></i>
+      </span>
+      <input type="text" id="searchInput" placeholder="මාතෘකාව මඟින් පෝස්ට් සෙවීම..."
+        class="w-full bg-slate-900/80 border border-slate-700/80 rounded-2xl pl-11 pr-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 transition shadow-inner text-sm">
+    </div>
+  </section>
+
   <main class="w-full max-w-4xl flex flex-col gap-8">
     
-    <!-- Upload Form (Admin Only) -->
+    <!-- Upload / Edit Form (Admin Only) -->
     <section id="uploadSection" class="glass p-6 sm:p-8 rounded-3xl shadow-2xl hidden animate-fade relative overflow-hidden">
       <div class="absolute -right-10 -top-10 w-40 h-40 bg-red-500/10 rounded-full blur-3xl pointer-events-none"></div>
       
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold text-white flex items-center gap-2.5">
+        <h2 id="formHeading" class="text-xl font-bold text-white flex items-center gap-2.5">
           <i class="fa-solid fa-pen-nib text-red-500"></i> නව Post එකක් එකතු කරන්න
         </h2>
         <button onclick="logoutAdmin()" class="text-xs text-red-400 hover:text-red-300 underline font-medium">Logout</button>
       </div>
       
       <form id="postForm" class="space-y-4">
+        <input type="hidden" id="editPostId" value="">
+        <input type="hidden" id="existingImageUrl" value="">
+
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Post Title (මාතෘකාව)</label>
           <input type="text" id="postTitle" placeholder="මාතෘකාව ඇතුළත් කරන්න..." required
@@ -104,15 +140,21 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Image Link / Direct Image URL</label>
-          <input type="url" id="imageUrl" placeholder="https://example.com/image.jpg" required
-            class="w-full bg-slate-900/80 border border-slate-700/80 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 transition shadow-inner">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Upload Cover Image (පින්තූරයක් තෝරන්න)</label>
+          <input type="file" id="imageFile" accept="image/*"
+            class="w-full bg-slate-900/80 border border-slate-700/80 rounded-xl px-4 py-2.5 text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-700 transition cursor-pointer">
         </div>
 
-        <button type="submit" id="submitBtn"
-          class="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold py-3.5 px-4 rounded-xl transition duration-300 transform hover:-translate-y-0.5 shadow-lg shadow-red-600/30 flex items-center justify-center gap-2">
-          <i class="fa-solid fa-cloud-arrow-up"></i> Post එක Save කර Telegram යවන්න
-        </button>
+        <div class="flex gap-2">
+          <button type="submit" id="submitBtn"
+            class="flex-1 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold py-3.5 px-4 rounded-xl transition duration-300 shadow-lg shadow-red-600/30 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Post එක Save කරන්න
+          </button>
+          <button type="button" id="cancelEditBtn" onclick="resetForm()" style="display:none;"
+            class="bg-slate-700 hover:bg-slate-600 text-white font-semibold px-4 py-3.5 rounded-xl transition">
+            Cancel
+          </button>
+        </div>
       </form>
 
       <!-- Send All Posts to Telegram Button -->
@@ -165,10 +207,11 @@
     </div>
   </div>
 
-  <!-- Firebase SDK & App Logic -->
+  <!-- Firebase SDK Modules & App Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, increment, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, increment, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCyTD7VTx-zBy7gZ2UKdpJyGB0353AnH44",
@@ -185,6 +228,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const storage = getStorage(app);
 
     const postForm = document.getElementById('postForm');
     const postsFeed = document.getElementById('postsFeed');
@@ -193,16 +237,30 @@
     const authSection = document.getElementById('authSection');
     const totalPostsCount = document.getElementById('totalPostsCount');
     const totalViewsCount = document.getElementById('totalViewsCount');
+    const searchInput = document.getElementById('searchInput');
+
+    let allPostsData = [];
+
+    window.closeWelcomeModal = function() {
+      document.getElementById('welcomeModal').classList.add('hidden');
+    };
 
     function checkAuth() {
       const isLoggedIn = sessionStorage.getItem('isAdminLoggedIn');
       if (isLoggedIn === 'true') {
         uploadSection.classList.remove('hidden');
-        authSection.innerHTML = `<span class="text-green-400 text-xs font-bold flex items-center gap-1.5 bg-green-500/10 px-3.5 py-2 rounded-xl border border-green-500/20 shadow-inner"><i class="fa-solid fa-circle-check"></i> Admin Logged In</span>`;
+        authSection.innerHTML = `
+          <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-3.5 py-2 rounded-xl transition text-sm border border-slate-700 flex items-center gap-1.5"><i class="fa-solid fa-house text-red-400"></i> Home</button>
+          <span class="text-green-400 text-xs font-bold flex items-center gap-1.5 bg-green-500/10 px-3.5 py-2 rounded-xl border border-green-500/20 shadow-inner"><i class="fa-solid fa-circle-check"></i> Admin</span>
+        `;
       } else {
         uploadSection.classList.add('hidden');
-        authSection.innerHTML = `<button onclick="openLoginModal()" class="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-semibold px-4 py-2 rounded-xl transition duration-300 shadow-lg shadow-red-600/30 flex items-center gap-2 text-sm transform hover:scale-105"><i class="fa-solid fa-lock"></i> Admin Login</button>`;
+        authSection.innerHTML = `
+          <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-3.5 py-2 rounded-xl transition text-sm border border-slate-700 flex items-center gap-1.5"><i class="fa-solid fa-house text-red-400"></i> Home</button>
+          <button onclick="openLoginModal()" class="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-semibold px-4 py-2 rounded-xl transition duration-300 shadow-lg shadow-red-600/30 flex items-center gap-2 text-sm transform hover:scale-105"><i class="fa-solid fa-lock"></i> Admin Login</button>
+        `;
       }
+      renderPosts(allPostsData);
     }
     window.checkAuth = checkAuth;
     checkAuth();
@@ -226,6 +284,7 @@
 
     window.logoutAdmin = function() {
       sessionStorage.removeItem('isAdminLoggedIn');
+      resetForm();
       checkAuth();
     }
 
@@ -236,45 +295,138 @@
       document.getElementById('loginModal').classList.add('hidden');
     }
 
-    // Realtime Database Fetch & Counter Calculation
     const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"));
 
     onSnapshot(postsQuery, (snapshot) => {
-      postsFeed.innerHTML = "";
-
-      if (snapshot.empty) {
-        postsFeed.innerHTML = `<p class="text-slate-400 text-center py-12 col-span-full">තවම Post එකක් එකතු කර නැත.</p>`;
-        totalPostsCount.innerText = "0";
-        totalViewsCount.innerText = "0";
-        return;
-      }
-
-      totalPostsCount.innerText = snapshot.size;
+      allPostsData = [];
       let totalViews = 0;
 
       snapshot.forEach((docSnap) => {
         const post = docSnap.data();
-        const postId = docSnap.id;
         const views = post.views || 0;
         totalViews += views;
-
-        createPostCard(postId, post.title, post.videoLink, post.imageUrl, views);
+        allPostsData.push({ id: docSnap.id, ...post });
       });
 
+      totalPostsCount.innerText = snapshot.size;
       totalViewsCount.innerText = totalViews;
+      renderPosts(allPostsData);
     });
 
-    // Increment View Count Function
+    searchInput.addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase();
+      const filtered = allPostsData.filter(p => p.title.toLowerCase().includes(term));
+      renderPosts(filtered);
+    });
+
+    function renderPosts(posts) {
+      postsFeed.innerHTML = "";
+      const isLoggedIn = sessionStorage.getItem('isAdminLoggedIn') === 'true';
+
+      if (posts.length === 0) {
+        postsFeed.innerHTML = `<p class="text-slate-400 text-center py-12 col-span-full">පෝස්ට් කිසිවක් හමු නොවීය.</p>`;
+        return;
+      }
+
+      posts.forEach(post => {
+        const card = document.createElement('div');
+        card.className = "glass-card border border-slate-700/60 rounded-2xl overflow-hidden shadow-xl flex flex-col transition duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:border-slate-600";
+
+        let adminButtons = "";
+        if (isLoggedIn) {
+          adminButtons = `
+            <div class="flex gap-2 mt-3 pt-3 border-t border-slate-700/60">
+              <button onclick="editPost('${post.id}', '${encodeURIComponent(post.title)}', '${encodeURIComponent(post.videoLink)}', '${encodeURIComponent(post.imageUrl)}')" 
+                class="flex-1 bg-amber-600/80 hover:bg-amber-600 text-white text-xs font-semibold py-2 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow">
+                <i class="fa-solid fa-pen-to-square"></i> Edit
+              </button>
+              <button onclick="deletePost('${post.id}')" 
+                class="flex-1 bg-red-600/80 hover:bg-red-600 text-white text-xs font-semibold py-2 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow">
+                <i class="fa-solid fa-trash"></i> Delete
+              </button>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="relative h-48 w-full bg-slate-950 overflow-hidden">
+            <img src="${post.imageUrl}" alt="${post.title}" class="w-full h-full object-cover transition duration-500 hover:scale-110" onerror="this.src='https://via.placeholder.com/400x200?text=No+Image'">
+            <div class="absolute top-3 right-3 bg-slate-900/80 backdrop-blur-md border border-slate-700 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+              <i class="fa-solid fa-eye text-red-500"></i> <span>${post.views || 0} Views</span>
+            </div>
+          </div>
+          <div class="p-5 flex flex-col justify-between flex-grow">
+            <div>
+              <h3 class="text-base font-bold text-white mb-4 line-clamp-2 leading-snug">${post.title}</h3>
+            </div>
+            <div>
+              <div class="flex gap-2 mb-2">
+                <button onclick="incrementView('${post.id}', '${post.videoLink}')"
+                  class="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-semibold py-2.5 px-4 rounded-xl transition duration-300 text-sm shadow-md shadow-red-600/20">
+                  <i class="fa-solid fa-play"></i> Watch
+                </button>
+                <button onclick="sharePost('${encodeURIComponent(post.title)}', '${encodeURIComponent(post.videoLink)}')"
+                  class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold py-2.5 px-3.5 rounded-xl transition text-sm shadow" title="Share">
+                  <i class="fa-solid fa-share-nodes"></i>
+                </button>
+              </div>
+              ${adminButtons}
+            </div>
+          </div>
+        `;
+        postsFeed.appendChild(card);
+      });
+    }
+
     window.incrementView = async function(postId, videoLink) {
       try {
         const postRef = doc(db, "posts", postId);
-        await updateDoc(postRef, {
-          views: increment(1)
-        });
+        await updateDoc(postRef, { views: increment(1) });
       } catch (e) {
         console.error("Error updating views: ", e);
       }
       window.open(videoLink, '_blank');
+    }
+
+    window.sharePost = function(title, link) {
+      const decodedTitle = decodeURIComponent(title);
+      const decodedLink = decodeURIComponent(link);
+      if (navigator.share) {
+        navigator.share({ title: decodedTitle, url: decodedLink }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(decodedLink);
+        alert("ලින්ක් එක Copy කරගන්න ලදී!");
+      }
+    }
+
+    window.deletePost = async function(postId) {
+      if (confirm("මෙම පෝස්ට් එක මකා දැමීමට අවශ්‍ය බව විශ්වාස ද?")) {
+        try {
+          await deleteDoc(doc(db, "posts", postId));
+        } catch (e) {
+          alert("පෝස්ට් එක මකා දැමීමේදී දෝෂයක් ඇති විය!");
+        }
+      }
+    }
+
+    window.editPost = function(id, title, videoLink, imageUrl) {
+      document.getElementById('editPostId').value = id;
+      document.getElementById('postTitle').value = decodeURIComponent(title);
+      document.getElementById('videoLink').value = decodeURIComponent(videoLink);
+      document.getElementById('existingImageUrl').value = decodeURIComponent(imageUrl);
+      document.getElementById('formHeading').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500"></i> Post එක සංස්කරණය කරන්න (Edit)`;
+      document.getElementById('submitBtn').innerHTML = `<i class="fa-solid fa-floppy-disk"></i> වෙනස්කම් Update කරන්න`;
+      document.getElementById('cancelEditBtn').style.display = "block";
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.resetForm = function() {
+      document.getElementById('postForm').reset();
+      document.getElementById('editPostId').value = "";
+      document.getElementById('existingImageUrl').value = "";
+      document.getElementById('formHeading').innerHTML = `<i class="fa-solid fa-pen-nib text-red-500"></i> නව Post එකක් එකතු කරන්න`;
+      document.getElementById('submitBtn').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Post එක Save කරන්න`;
+      document.getElementById('cancelEditBtn').style.display = "none";
     }
 
     async function sendTelegramNotification(title, videoLink, imageUrl) {
@@ -287,7 +439,6 @@
         `✨ <i>Stay tuned for more updates!</i>`;
 
       const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
-
       try {
         await fetch(telegramUrl, {
           method: 'POST',
@@ -307,7 +458,7 @@
     window.sendAllPostsToTelegram = async function() {
       const sendAllBtn = document.getElementById('sendAllBtn');
       sendAllBtn.disabled = true;
-      sendAllBtn.innerText = "සියලුම Posts යවමින් පවතී... ටිකක් රැඳී සිටින්න";
+      sendAllBtn.innerText = "සියලුම Posts යවමින් පවතී...";
 
       try {
         const querySnapshot = await getDocs(collection(db, "posts"));
@@ -327,10 +478,8 @@
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
         }
-
         alert(`සාර්ථකයි! Posts ${count} ක් Telegram වෙත යවන ලදී.`);
       } catch (error) {
-        console.error("Error sending all posts: ", error);
         alert("Posts යැවීමේදී දෝෂයක් ඇති විය!");
       } finally {
         sendAllBtn.disabled = false;
@@ -340,57 +489,56 @@
 
     postForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-
+      const editId = document.getElementById('editPostId').value;
       const title = document.getElementById('postTitle').value;
       const videoLink = document.getElementById('videoLink').value;
-      const imageUrl = document.getElementById('imageUrl').value;
+      const imageFile = document.getElementById('imageFile').files[0];
+      const existingImageUrl = document.getElementById('existingImageUrl').value;
 
       submitBtn.disabled = true;
-      submitBtn.innerText = "Save වෙමින් සහ Telegram යවමින්...";
+      submitBtn.innerText = "පින්තූරය Upload වෙමින් පවතී...";
 
       try {
-        await addDoc(collection(db, "posts"), {
-          title: title,
-          videoLink: videoLink,
-          imageUrl: imageUrl,
-          views: 0,
-          createdAt: serverTimestamp()
-        });
+        let imageUrl = existingImageUrl;
 
-        await sendTelegramNotification(title, videoLink, imageUrl);
+        if (imageFile) {
+          const storageRef = ref(storage, 'posts/' + Date.now() + '_' + imageFile.name);
+          const snapshot = await uploadBytes(storageRef, imageFile);
+          imageUrl = await getDownloadURL(snapshot.ref);
+        }
 
-        postForm.reset();
+        if (!imageUrl) {
+          alert("කරුණාකර පින්තූරයක් තෝරන්න!");
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Post එක Save කරන්න`;
+          return;
+        }
+
+        if (editId) {
+          const postRef = doc(db, "posts", editId);
+          await updateDoc(postRef, { title, videoLink, imageUrl });
+          alert("පෝස්ට් එක සාර්ථකව යාවත්කාලීන කරන ලදී!");
+          resetForm();
+        } else {
+          submitBtn.innerText = "Save වෙමින් සහ Telegram යවමින්...";
+          await addDoc(collection(db, "posts"), {
+            title: title,
+            videoLink: videoLink,
+            imageUrl: imageUrl,
+            views: 0,
+            createdAt: serverTimestamp()
+          });
+          await sendTelegramNotification(title, videoLink, imageUrl);
+          postForm.reset();
+        }
       } catch (error) {
-        console.error("Error adding document: ", error);
-        alert("පෝස්ට් එක Save කිරීමේදී දෝෂයක් ආවා!");
+        console.error("Error saving document: ", error);
+        alert("දෝෂයක් ඇති විය!");
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Post එක Save කර Telegram යවන්න`;
+        submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Post එක Save කරන්න`;
       }
     });
-
-    function createPostCard(postId, title, videoLink, imageUrl, views) {
-      const card = document.createElement('div');
-      card.className = "glass-card border border-slate-700/60 rounded-2xl overflow-hidden shadow-xl flex flex-col transition duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:border-slate-600";
-
-      card.innerHTML = `
-        <div class="relative h-48 w-full bg-slate-950 overflow-hidden">
-          <img src="${imageUrl}" alt="${title}" class="w-full h-full object-cover transition duration-500 hover:scale-110" onerror="this.src='https://via.placeholder.com/400x200?text=No+Image'">
-          <div class="absolute top-3 right-3 bg-slate-900/80 backdrop-blur-md border border-slate-700 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-            <i class="fa-solid fa-eye text-red-500"></i> <span>${views} Views</span>
-          </div>
-        </div>
-        <div class="p-5 flex flex-col justify-between flex-grow">
-          <h3 class="text-base font-bold text-white mb-4 line-clamp-2 leading-snug">${title}</h3>
-          <button onclick="incrementView('${postId}', '${videoLink}')"
-            class="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-semibold py-2.5 px-4 rounded-xl transition duration-300 text-sm shadow-md shadow-red-600/20">
-            <i class="fa-solid fa-play"></i> Watch Video
-          </button>
-        </div>
-      `;
-
-      postsFeed.appendChild(card);
-    }
   </script>
 </body>
 </html>
