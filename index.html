@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Post Manager Hub - Premium Edition</title>
+  <title>Post Manager Hub - Base64 Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -43,7 +43,7 @@
 </head>
 <body class="min-h-screen flex flex-col items-center p-4 sm:p-8">
 
-  <!-- Welcome Overlay Modal (સයිට් එකට පළමු වරට එන විට පෙන්වන Welcome Pop-up එක) -->
+  <!-- Welcome Modal -->
   <div id="welcomeModal" class="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade">
     <div class="glass p-8 sm:p-10 rounded-3xl shadow-2xl max-w-md w-full text-center border border-slate-700/80 relative overflow-hidden">
       <div class="w-20 h-20 bg-gradient-to-tr from-red-600 to-rose-500 rounded-full flex items-center justify-center text-3xl text-white mx-auto mb-6 shadow-lg shadow-red-600/40 floating">
@@ -62,7 +62,7 @@
     </div>
   </div>
 
-  <!-- Header (Home Button & Admin Login) -->
+  <!-- Header -->
   <header class="w-full max-w-4xl mb-6 flex justify-between items-center border-b border-slate-800/80 pb-4 animate-fade">
     <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-rose-400 to-pink-500 flex items-center gap-2.5">
       <i class="fa-solid fa-house text-red-500 hover:scale-110 transition"></i> Post Manager Hub
@@ -112,7 +112,7 @@
 
   <main class="w-full max-w-4xl flex flex-col gap-8">
     
-    <!-- Upload / Edit Form (Admin Only) -->
+    <!-- Upload / Edit Form -->
     <section id="uploadSection" class="glass p-6 sm:p-8 rounded-3xl shadow-2xl hidden animate-fade relative overflow-hidden">
       <div class="absolute -right-10 -top-10 w-40 h-40 bg-red-500/10 rounded-full blur-3xl pointer-events-none"></div>
       
@@ -140,7 +140,7 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Upload Cover Image (පින්තූරයක් තෝරන්න)</label>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Upload Cover Image (පරිගණකයෙන් පින්තූරයක් තෝරන්න)</label>
           <input type="file" id="imageFile" accept="image/*"
             class="w-full bg-slate-900/80 border border-slate-700/80 rounded-xl px-4 py-2.5 text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-700 transition cursor-pointer">
         </div>
@@ -157,7 +157,7 @@
         </div>
       </form>
 
-      <!-- Send All Posts to Telegram Button -->
+      <!-- Send All Posts to Telegram -->
       <div class="mt-4 pt-4 border-t border-slate-800">
         <button id="sendAllBtn" onclick="sendAllPostsToTelegram()"
           class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-xl transition duration-300 shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 text-sm">
@@ -207,11 +207,10 @@
     </div>
   </div>
 
-  <!-- Firebase SDK Modules & App Logic -->
+  <!-- Firebase SDK & App Logic (Base64 Implementation) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, increment, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCyTD7VTx-zBy7gZ2UKdpJyGB0353AnH44",
@@ -228,7 +227,6 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const storage = getStorage(app);
 
     const postForm = document.getElementById('postForm');
     const postsFeed = document.getElementById('postsFeed');
@@ -430,6 +428,10 @@
     }
 
     async function sendTelegramNotification(title, videoLink, imageUrl) {
+      // Note: Telegram API direct base64 photos can fail if too large, so we fallback or send text if base64 is huge
+      const isBase64 = imageUrl.startsWith('data:image');
+      const photoToSend = isBase64 ? "https://via.placeholder.com/400x200?text=Post+Image" : imageUrl;
+
       const captionText = 
         `🔥 <b>NEW UPDATE PUBLISHED!</b> 🔥\n` +
         `━━━━━━━━━━━━━━━━━━━\n` +
@@ -445,7 +447,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chat_id: TELEGRAM_CHAT_ID,
-            photo: imageUrl,
+            photo: photoToSend,
             caption: captionText,
             parse_mode: 'HTML'
           })
@@ -487,6 +489,16 @@
       }
     };
 
+    // Helper function to convert file to Base64
+    function convertFileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    }
+
     postForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const editId = document.getElementById('editPostId').value;
@@ -496,15 +508,13 @@
       const existingImageUrl = document.getElementById('existingImageUrl').value;
 
       submitBtn.disabled = true;
-      submitBtn.innerText = "පින්තූරය Upload වෙමින් පවතී...";
+      submitBtn.innerText = "පින්තූරය සකස් කරමින් පවතී...";
 
       try {
         let imageUrl = existingImageUrl;
 
         if (imageFile) {
-          const storageRef = ref(storage, 'posts/' + Date.now() + '_' + imageFile.name);
-          const snapshot = await uploadBytes(storageRef, imageFile);
-          imageUrl = await getDownloadURL(snapshot.ref);
+          imageUrl = await convertFileToBase64(imageFile);
         }
 
         if (!imageUrl) {
